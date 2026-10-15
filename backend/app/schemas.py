@@ -15,9 +15,7 @@ class ProjectRead(BaseModel):
     description: str
     stack: list[str]
     active: bool
-    llm_provider: str
     llm_model: str
-    llm_base_url: str | None
     llm_temperature: float
 
     class Config:
@@ -38,9 +36,7 @@ class ProjectStateRead(BaseModel):
 
 
 class ProjectLLMUpdate(BaseModel):
-    llm_provider: Optional[str] = None
     llm_model: Optional[str] = None
-    llm_base_url: Optional[str] = None
     llm_temperature: Optional[float] = None
 
 

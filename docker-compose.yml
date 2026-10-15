@@ -23,30 +23,11 @@ services:
     restart: unless-stopped
     env_file:
       - ./backend/.env
-    environment:
-      DATABASE_URL: postgresql+psycopg://assistant:assistantpass@host.docker.internal:5432/assistant
-    extra_hosts:
-      - "host.docker.internal:host-gateway"
-    dns:
-      - 1.1.1.1
-      - 8.8.8.8
     depends_on:
       db:
         condition: service_healthy
     ports:
       - "8000:8000"
 
-  ollama:
-    image: ollama/ollama:latest
-    restart: unless-stopped
-    profiles: ["llm"]
-    ports:
-      - "11434:11434"
-    volumes:
-      - ollama_data:/root/.ollama
-
 volumes:
   postgres_data:
-  ollama_data:
-
-  

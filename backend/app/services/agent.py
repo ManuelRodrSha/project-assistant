@@ -28,8 +28,6 @@ Reglas:
   },
   "needs_clarification": false
 }
-
-Si no hay cambios de memoria, usa arrays vacíos y strings vacíos.
 """
 
 
@@ -41,13 +39,10 @@ class AgentOutput(BaseModel):
 
 def _safe_json_loads(text: str):
     text = text.strip()
-
-    # limpia fences de markdown si el modelo las mete
     if text.startswith("```"):
         text = text.removeprefix("```json").removeprefix("```").strip()
         if text.endswith("```"):
             text = text[:-3].strip()
-
     return json.loads(text)
 
 
@@ -59,9 +54,7 @@ def build_project_context(project, state):
             "description": project.description,
             "stack": project.stack or [],
             "active": project.active,
-            "llm_provider": project.llm_provider,
             "llm_model": project.llm_model,
-            "llm_base_url": project.llm_base_url,
             "llm_temperature": project.llm_temperature,
         },
         "state": {
@@ -75,18 +68,11 @@ def build_project_context(project, state):
     }
 
 
-def chat_with_agent(
-    user_message: str,
-    project_context: dict,
-    global_context: dict,
-    llm_config: dict,
-):
-    provider = llm_config.get("provider", settings.DEFAULT_LLM_PROVIDER)
-    model = llm_config.get("model", settings.DEFAULT_LLM_MODEL)
-    base_url = llm_config.get("base_url")
-    temperature = llm_config.get("temperature", settings.DEFAULT_LLM_TEMPERATURE)
+def chat_with_agent(user_message: str, project_context: dict, global_context: dict):
+    client = build_client()
 
-    client = build_client(provider=provider, base_url=base_url)
+    model = project_context["project"].get("llm_model") or settings.DEFAULT_LLM_MODEL
+    temperature = project_context["project"].get("llm_temperature", settings.DEFAULT_LLM_TEMPERATURE)
 
     prompt = f"""
 Memoria global:
@@ -116,7 +102,6 @@ Responde solo con JSON válido.
         data = _safe_json_loads(raw)
         return AgentOutput(**data)
     except Exception:
-        # Si el modelo no devuelve JSON válido, al menos devolvemos el texto
         return AgentOutput(
             reply=raw,
             memory_update={},

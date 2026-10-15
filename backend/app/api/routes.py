@@ -77,7 +77,6 @@ def update_project_llm(
 
 @router.post("/chat", response_model=ChatResponse)
 def chat(payload: ChatRequest, db: Session = Depends(get_db)):
-    # Elegir proyecto: explícito o activo
     if payload.project_id is not None:
         project = crud.get_project(db, payload.project_id)
         if not project:
@@ -88,7 +87,6 @@ def chat(payload: ChatRequest, db: Session = Depends(get_db)):
             raise HTTPException(status_code=400, detail="No hay proyecto activo")
 
     state = crud.get_state(db, project.id)
-
     project_context = build_project_context(project, state)
 
     global_context = {
@@ -99,18 +97,10 @@ def chat(payload: ChatRequest, db: Session = Depends(get_db)):
         ],
     }
 
-    llm_config = {
-        "provider": project.llm_provider,
-        "model": project.llm_model,
-        "base_url": project.llm_base_url,
-        "temperature": project.llm_temperature,
-    }
-
     result = chat_with_agent(
         user_message=payload.message,
         project_context=project_context,
         global_context=global_context,
-        llm_config=llm_config,
     )
 
     if result.memory_update:

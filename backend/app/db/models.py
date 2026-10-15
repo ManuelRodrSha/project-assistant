@@ -13,9 +13,7 @@ class Project(Base):
     stack = Column(JSON, default=list)
     active = Column(Boolean, default=False, nullable=False)
 
-    llm_provider = Column(String(50), default="openai", nullable=False)
     llm_model = Column(String(100), default="gpt-4.1-mini", nullable=False)
-    llm_base_url = Column(String(255), nullable=True)
     llm_temperature = Column(Float, default=0.2, nullable=False)
 
     created_at = Column(DateTime(timezone=True), server_default=func.now())
